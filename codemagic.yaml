@@ -28,24 +28,24 @@ workflows:
           
       - name: Build Android Test App
         script: |
-          patrol build android --debug --target integration_test/app_test.dart
+          patrol build android --debug --target integration_test/successful_login_test.dart
           
       - name: Run Android Integration Tests
         script: |
           patrol test android \
             --debug \
-            --target integration_test/app_test.dart \
+            --target integration_test/successful_login_test.dart \
             --artifact-path=patrol-results
             
       - name: Build iOS Test App
         script: |
-          patrol build ios --debug --target integration_test/app_test.dart
+          patrol build ios --debug --target integration_test/successful_login_test.dart
           
       - name: Run iOS Integration Tests
         script: |
           patrol test ios \
             --debug \
-            --target integration_test/app_test.dart \
+            --target integration_test/successful_login_test.dart \
             --artifact-path=patrol-results
             
     artifacts:
