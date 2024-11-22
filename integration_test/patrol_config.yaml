@@ -1,0 +1,7 @@
+android:
+  device:
+    name: "Pixel_4_API_30"
+
+ios:
+  device:
+    name: "iPhone 14"
