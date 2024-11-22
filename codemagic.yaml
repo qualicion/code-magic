@@ -1,23 +1,62 @@
 workflows:
-  default-workflow:
-    name: Default Workflow
+  patrol-integration-tests:
+    name: Patrol Integration Tests
+    max_build_duration: 60
     environment:
       flutter: stable
       xcode: latest
-      cocoapods: default
+      android_signing:
+        - keystore_reference
+      groups:
+        - google_play
+        - app_store_credentials
+      vars:
+        PATROL_ENABLED: "true"
+        ANDROID_SDK_PATH: "/usr/local/lib/android/sdk"
     scripts:
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_PATH" > "$CM_BUILD_DIR/android/local.properties"
+
       - name: Get Flutter packages
-        script: flutter pub get
-      - name: Flutter analyze
-        script: flutter analyze
-      - name: Flutter test
-        script: flutter test
-      - name: Build iOS
-        script: flutter build ios --release --no-codesign
-      - name: Build Android
-        script: flutter build apk --release
+        script: |
+          flutter pub get
+          
+      - name: Install Patrol CLI
+        script: |
+          dart pub global activate patrol_cli
+          
+      - name: Build Android Test App
+        script: |
+          patrol build android --debug --target integration_test/app_test.dart
+          
+      - name: Run Android Integration Tests
+        script: |
+          patrol test android \
+            --debug \
+            --target integration_test/app_test.dart \
+            --artifact-path=patrol-results
+            
+      - name: Build iOS Test App
+        script: |
+          patrol build ios --debug --target integration_test/app_test.dart
+          
+      - name: Run iOS Integration Tests
+        script: |
+          patrol test ios \
+            --debug \
+            --target integration_test/app_test.dart \
+            --artifact-path=patrol-results
+            
     artifacts:
-      - build/**/outputs/apk/**/*.apk
-      - build/**/outputs/bundle/**/*.aab
-      - build/**/outputs/**/mapping.txt
-      - build/ios/ipa/*.ipa
+      - patrol-results/**/*.png
+      - patrol-results/**/*.xml
+      - patrol-results/**/video.mp4
+      
+    publishing:
+      email:
+        recipients:
+          - your.email@example.com
+        notify:
+          success: true
+          failure: true
