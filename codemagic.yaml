@@ -6,13 +6,12 @@ workflows:
       flutter: stable
       xcode: latest
       android_signing:
-        - keystore: upload-keystore.jks
-        - key_alias: $KEY_ALIAS
-        - key_password: $KEY_PASSWORD
-        - store_password: $STORE_PASSWORD
+        - keystore: upload-keystore
       vars:
         PATROL_ENABLED: "true"
         ANDROID_SDK_PATH: "/usr/local/lib/android/sdk"
+      groups:
+        - android_signing
     scripts:
       - name: Set up local.properties
         script: |
