@@ -6,7 +6,7 @@ workflows:
       flutter: stable
       xcode: latest
       android_signing:
-        - keystore: upload-keystore
+        - keystore: flutter_patrol/android/app/upload-keystore
       vars:
         PATROL_ENABLED: "true"
         ANDROID_SDK_PATH: "/usr/local/lib/android/sdk"
