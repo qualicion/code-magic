@@ -6,10 +6,7 @@ workflows:
       flutter: stable
       xcode: latest
       android_signing:
-        - keystore_reference
-      groups:
-        - google_play
-        - app_store_credentials
+        - android_signing
       vars:
         PATROL_ENABLED: "true"
         ANDROID_SDK_PATH: "/usr/local/lib/android/sdk"
@@ -56,7 +53,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - your.email@example.com
+          - babatunde.oduniyi@gohenry.co.uk
         notify:
           success: true
           failure: true
