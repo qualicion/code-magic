@@ -5,7 +5,8 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
-      android_signing: android_signing
+      android_signing: 
+        - android_signing
       vars:
         PATROL_ENABLED: "true"
         ANDROID_SDK_PATH: "/usr/local/lib/android/sdk"
