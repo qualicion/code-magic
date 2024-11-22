@@ -6,10 +6,11 @@ workflows:
       flutter: stable
       xcode: latest
       android_signing:
-        - keystore_reference: $KEYSTORE_FILE
-        - key_alias: $KEY_ALIAS
-        - key_password: $KEY_PASSWORD
-        - store_password: $STORE_PASSWORD
+        - keystore:
+            reference: $KEYSTORE_FILE
+            password: $STORE_PASSWORD
+            key_alias: $KEY_ALIAS
+            key_password: $KEY_PASSWORD
       vars:
         PATROL_ENABLED: "true"
         ANDROID_SDK_PATH: "/usr/local/lib/android/sdk"
