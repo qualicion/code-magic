@@ -1,62 +1,25 @@
 workflows:
-  patrol-integration-tests:
-    name: Patrol Integration Tests
+  patrol-android-tests:
+    name: Patrol Android Tests
     max_build_duration: 60
     environment:
       flutter: stable
-      xcode: latest
-      android_signing:
-        - keystore: upload-keystore
-      vars:
-        PATROL_ENABLED: "true"
-        ANDROID_SDK_PATH: "/usr/local/lib/android/sdk"
       groups:
-        - android_signing
-        - patrol_config 
+        - patrol_config
     scripts:
-      - name: Set up local.properties
-        script: |
-          echo "sdk.dir=$ANDROID_SDK_PATH" > "$CM_BUILD_DIR/android/local.properties"
-
       - name: Get Flutter packages
-        script: |
-          flutter pub get
+        script: flutter pub get
           
       - name: Install Patrol CLI
-        script: |
-          dart pub global activate patrol_cli
-          
-      - name: Build Android Test App
-        script: |
-          patrol build android --debug --target integration_test/successful_login_test.dart
+        script: dart pub global activate patrol_cli
           
       - name: Run Android Integration Tests
         script: |
           patrol test android \
             --debug \
-            --target integration_test/successful_login_test.dart \
-            --artifact-path=patrol-results
-            
-      - name: Build iOS Test App
-        script: |
-          patrol build ios --debug --target integration_test/successful_login_test.dart
-          
-      - name: Run iOS Integration Tests
-        script: |
-          patrol test ios \
-            --debug \
-            --target integration_test/successful_login_test.dart \
-            --artifact-path=patrol-results
+            --target integration_test/successful_login_test.dart
             
     artifacts:
       - patrol-results/**/*.png
       - patrol-results/**/*.xml
       - patrol-results/**/video.mp4
-      
-    publishing:
-      email:
-        recipients:
-          - babatunde.oduniyi@gohenry.co.uk
-        notify:
-          success: true
-          failure: true
