@@ -12,6 +12,7 @@ workflows:
         ANDROID_SDK_PATH: "/usr/local/lib/android/sdk"
       groups:
         - android_signing
+        - patrol_config 
     scripts:
       - name: Set up local.properties
         script: |
