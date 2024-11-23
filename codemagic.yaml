@@ -11,7 +11,7 @@ workflows:
         script: flutter pub get
           
       - name: Install Patrol CLI
-        script: dart pub global activate patrol_cli 3.11.0
+        script: dart pub global activate patrol_cli
           
       - name: Run Android Integration Tests
         script: |
