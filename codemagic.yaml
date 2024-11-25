@@ -15,9 +15,9 @@ workflows:
           
       - name: Run Android Integration Tests
         script: |
-          patrol test --target android \
-            --debug \
-            integration_test/successful_login_test.dart
+          patrol test integration_test/successful_login_test.dart \
+            --target android \
+            --debug
             
     artifacts:
       - patrol-results/**/*.png
