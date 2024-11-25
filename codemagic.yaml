@@ -6,12 +6,21 @@ workflows:
       flutter: stable
       groups:
         - patrol_config
+      android:
+        image: android-31
     scripts:
       - name: Get Flutter packages
         script: flutter pub get
           
       - name: Install Patrol CLI
         script: dart pub global activate patrol_cli
+
+      - name: Start Android emulator
+        script: |
+          cd $ANDROID_HOME/tools
+          emulator @Pixel_4_API_31 -no-audio -no-window &
+          adb wait-for-device
+          adb shell input keyevent 82
           
       - name: Run Android Integration Tests
         script: |
