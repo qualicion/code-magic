@@ -1,33 +1,35 @@
 workflows:
- patrol-android-tests:
-   name: Patrol Android Tests 
-   instance_type: mac_mini_m2
-   max_build_duration: 120
-   environment:
-     flutter: stable
-     groups:
-       - patrol_config
-   scripts:
-     - name: Setup
-       script: |
-         flutter pub get
-         dart pub global activate patrol_cli
-         
-     - name: Install emulator
-       script: |
-         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "emulator" "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;arm64-v8a"
-         
-     - name: Create and start emulator  
-       script: |
-         echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-30;google_apis;arm64-v8a"
-         $ANDROID_HOME/emulator/emulator -avd test_device -no-window -no-audio &
-         adb wait-for-device
-         
-     - name: Run tests
-       script: |
-         patrol test integration_test/successful_login_test.dart --debug
-           
-   artifacts:
-     - patrol-results/**/*.png
-     - patrol-results/**/*.xml
-     - patrol-results/**/video.mp4
+  patrol-android-tests:
+    name: Patrol Android Tests
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      flutter: stable
+      groups:
+        - patrol_config
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      
+      - name: Get Flutter packages
+        script: flutter pub get
+          
+      - name: Install Patrol CLI
+        script: dart pub global activate patrol_cli
+        
+      - name: Create emulator
+        script: |
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;x86_64"
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-30;google_apis;x86_64"
+      
+      - name: Start emulator and run tests
+        script: |
+          $ANDROID_HOME/emulator/emulator -avd test_device -no-audio -no-window &
+          adb wait-for-device
+          patrol test integration_test/successful_login_test.dart -d test_device --debug
+            
+    artifacts:
+      - patrol-results/**/*.png
+      - patrol-results/**/*.xml
+      - patrol-results/**/video.mp4
