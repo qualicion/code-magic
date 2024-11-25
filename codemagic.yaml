@@ -15,14 +15,22 @@ workflows:
         
       - name: Start Android emulator
         script: |
+          echo "Starting emulator..."
           $ANDROID_SDK_ROOT/emulator/emulator -avd emulator -no-window -no-audio -no-boot-anim -accel on &
+          echo "Waiting for device to complete boot..."
           adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
+          echo "Emulator is ready!"
           
       - name: Run Android Integration Tests
         script: |
+          echo "Available devices:"
+          flutter devices
+          echo "Starting Patrol tests..."
           patrol test integration_test/successful_login_test.dart \
             --target android \
-            --debug
+            --debug \
+            --timeout=15m \
+            --verbose
             
     artifacts:
       - patrol-results/**/*.png
