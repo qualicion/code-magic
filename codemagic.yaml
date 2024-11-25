@@ -15,8 +15,8 @@ workflows:
         
       - name: Create and start Android emulator
         script: |
-          sdkmanager "system-images;android-30;google_apis;x86_64"
-          echo "no" | avdmanager create avd -n test_emulator -k "system-images;android-30;google_apis;x86_64"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-30;google_apis;x86_64"
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n test_emulator -k "system-images;android-30;google_apis;x86_64"
           $ANDROID_HOME/emulator/emulator -avd test_emulator -no-window -no-audio &
           adb wait-for-device
           
