@@ -16,7 +16,11 @@ workflows:
       - name: Start Android emulator
         script: |
           echo "Starting emulator..."
-          $ANDROID_SDK_ROOT/emulator/emulator -avd emulator -no-window -no-audio -no-boot-anim -accel on &
+          # List available emulators
+          $ANDROID_HOME/tools/bin/avdmanager list avd
+          # Start the emulator using correct path
+          $ANDROID_HOME/tools/emulator -list-avds
+          $ANDROID_HOME/tools/emulator @Pixel_4_API_31 -no-audio -no-window &
           echo "Waiting for device to complete boot..."
           adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
           echo "Emulator is ready!"
