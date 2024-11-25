@@ -8,24 +8,19 @@ workflows:
       groups:
         - patrol_config
     scripts:
-      - name: Install dependencies and setup
+      - name: Install dependencies
         script: |
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "emulator" "platform-tools" "platforms;android-30"
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;arm64-v8a"
-          flutter pub get
-          dart pub global activate patrol_cli
         
       - name: Create and start emulator
         script: |
           echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-30;google_apis;arm64-v8a" --force
-          $ANDROID_HOME/emulator/emulator -avd test_device -no-window -no-audio -no-snapshot-load -gpu swiftshader_indirect -accel on &
+          $ANDROID_HOME/emulator/emulator -avd test_device -no-window -no-audio -no-snapshot -gpu swiftshader -accel off &
           adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 3; done'
       
       - name: Run tests
         script: |
+          flutter pub get
+          dart pub global activate patrol_cli
           patrol test integration_test/successful_login_test.dart --debug
-            
-    artifacts:
-      - patrol-results/**/*.png
-      - patrol-results/**/*.xml
-      - patrol-results/**/video.mp4
