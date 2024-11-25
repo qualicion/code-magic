@@ -1,26 +1,30 @@
 workflows:
-  patrol-android-tests:
-    name: Patrol Android Tests
-    instance_type: mac_mini_m2
-    max_build_duration: 120
-    environment:
-      flutter: stable
-      groups:
-        - patrol_config
-    scripts:
-      - name: Install dependencies
-        script: |
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "emulator" "platform-tools" "platforms;android-30"
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;x86_64"
-        
-      - name: Create and start emulator
-        script: |
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-30;google_apis;x86_64" --force
-          $ANDROID_HOME/emulator/emulator -avd test_device -no-window -no-audio -gpu swiftshader_indirect &
-          adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 3; done'
-      
-      - name: Run tests
-        script: |
-          flutter pub get
-          dart pub global activate patrol_cli
-          patrol test integration_test/successful_login_test.dart --debug
+ patrol-android-tests:
+   name: Patrol Android Tests
+   instance_type: mac_mini_m2
+   max_build_duration: 120
+   environment:
+     flutter: stable
+     groups:
+       - patrol_config
+   scripts:
+     - name: Install Flutter packages
+       script: |
+         flutter pub get
+         
+     - name: Install Patrol CLI  
+       script: |
+         dart pub global activate patrol_cli
+         
+     - name: Check available devices
+       script: |
+         flutter devices
+         
+     - name: Run Patrol tests
+       script: |
+         patrol test integration_test/successful_login_test.dart
+       
+   artifacts:
+     - patrol-results/**/*.png
+     - patrol-results/**/*.xml
+     - patrol-results/**/video.mp4
