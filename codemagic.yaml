@@ -8,26 +8,22 @@ workflows:
       groups:
         - patrol_config
     scripts:
-      - name: Set up local.properties
+      - name: Install dependencies and setup
         script: |
-          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-      
-      - name: Get Flutter packages
-        script: flutter pub get
-          
-      - name: Install Patrol CLI
-        script: dart pub global activate patrol_cli
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "emulator" "platform-tools" "platforms;android-30"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;arm64-v8a"
+          flutter pub get
+          dart pub global activate patrol_cli
         
-      - name: Create emulator
+      - name: Create and start emulator
         script: |
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;x86_64"
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-30;google_apis;x86_64"
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n test_device -k "system-images;android-30;google_apis;arm64-v8a" --force
+          $ANDROID_HOME/emulator/emulator -avd test_device -no-window -no-audio -no-snapshot-load -gpu swiftshader_indirect -accel on &
+          adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 3; done'
       
-      - name: Start emulator and run tests
+      - name: Run tests
         script: |
-          $ANDROID_HOME/emulator/emulator -avd test_device -no-audio -no-window &
-          adb wait-for-device
-          patrol test integration_test/successful_login_test.dart -d test_device --debug
+          patrol test integration_test/successful_login_test.dart --debug
             
     artifacts:
       - patrol-results/**/*.png
