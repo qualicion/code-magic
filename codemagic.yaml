@@ -20,7 +20,7 @@ workflows:
 
       - name: Start emulator
         script: |
-          $ANDROID_HOME/emulator/emulator -avd $AVD_NAME -no-window -no-audio -gpu swiftshader_indirect -accel off -memory 2048 -verbose &
+          $ANDROID_HOME/emulator/emulator -avd $AVD_NAME -no-window -no-audio -gpu swiftshader_indirect -accel off -verbose &
           adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 3; done'
 
       - name: List available devices
