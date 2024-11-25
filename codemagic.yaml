@@ -13,28 +13,12 @@ workflows:
       - name: Install Patrol CLI
         script: dart pub global activate patrol_cli
         
-      - name: Start Android emulator
-        script: |
-          echo "Starting emulator..."
-          # List available emulators
-          $ANDROID_HOME/tools/bin/avdmanager list avd
-          # Start the emulator using correct path
-          $ANDROID_HOME/tools/emulator -list-avds
-          $ANDROID_HOME/tools/emulator @Pixel_4_API_31 -no-audio -no-window &
-          echo "Waiting for device to complete boot..."
-          adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
-          echo "Emulator is ready!"
-          
       - name: Run Android Integration Tests
         script: |
-          echo "Available devices:"
-          flutter devices
-          echo "Starting Patrol tests..."
-          patrol test integration_test/successful_login_test.dart \
-            --target android \
+          patrol test \
+            -d android \
             --debug \
-            --timeout=15m \
-            --verbose
+            integration_test/successful_login_test.dart
             
     artifacts:
       - patrol-results/**/*.png
