@@ -12,12 +12,12 @@ workflows:
     scripts:
       - name: Install Android SDK tools
         script: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "emulator" "build-tools;30.0.3" "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "emulator" "build-tools;30.0.3" "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;arm64-v8a"
 
       - name: Create emulator
         script: |
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n $AVD_NAME -k "system-images;android-30;google_apis;x86_64" --force
-          
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n $AVD_NAME -k "system-images;android-30;google_apis;arm64-v8a" --force
+
       - name: Start emulator
         script: |
           $ANDROID_HOME/emulator/emulator -avd $AVD_NAME -no-window -no-audio -gpu swiftshader_indirect &
