@@ -1,12 +1,10 @@
 workflows:
-  patrol_test:
-    name: Patrol Test Workflow
+  patrol_android_test:
+    name: Android Test Workflow
     max_build_duration: 60
     instance_type: linux
     environment:
       flutter: 3.24.3
-      xcode: 16.1
-      cocoapods: 1.14.3
     triggering:
       events:  
         - push
@@ -40,9 +38,62 @@ workflows:
         ignore_failure: false
 
     artifacts:
-      # Collect Patrol test reports
       - ./patrol/reports/**/*
     publishing:
       email:
         recipients:
           - qualicion@outlook.com
+
+  patrol_ios_test:
+    name: iOS Test Workflow
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      flutter: 3.24.3
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:  
+        - push
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+          dart pub global activate patrol_cli
+          
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          pod install
+          cd ..
+          
+      - name: Start iOS Simulator
+        script: |
+          xcrun simctl boot "iPhone 15"
+          xcrun simctl list devices
+          flutter devices
+          
+      - name: Run Patrol tests
+        script: |
+          patrol test integration_test/fail_login_test.dart -d "iPhone 15" --debug
+          
+    artifacts:
+      - patrol-results/**/*.png
+      - patrol-results/**/*.xml
+      - patrol-results/**/video.mp4
+    publishing:
+      email:
+        recipients:
+          - qualicion@outlook.com
+
+  integration_tests:
+    name: Run All Integration Tests
+    triggering:
+      events:
+        - push
+    scripts:
+      - name: Trigger Platform Tests
+        script: |
+          # Trigger both workflows
+          codemagic workflow run patrol_android_test
+          codemagic workflow run patrol_ios_test
