@@ -1,35 +1,48 @@
 workflows:
-  ios-integration-test:
-    name: iOS Integration Test
-    instance_type: mac_mini_m2
-    max_build_duration: 120
+  patrol_test:
+    name: Patrol Test Workflow
+    max_build_duration: 60
+    instance_type: linux
     environment:
-      flutter: stable
-      xcode: latest
-      cocoapods: default
+      flutter: 3.24.3
+      xcode: 16.1
+      cocoapods: 1.14.3
+    triggering:
+      events:  
+        - push
     scripts:
-      - name: Get Flutter packages
-        script: |
-          flutter pub get
-          dart pub global activate patrol_cli
+      - name: Install Patrol CLI
+        script: dart pub global activate patrol_cli
+
+      - name: List Emulators
+        script: emulator -list-avds
           
-      - name: Install CocoaPods
+      - name: SDK manager
         script: |
-          cd ios
-          pod install
-          cd ..
-          
-      - name: Start iOS Simulator
+          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools 
+          sdkmanager --update
+          yes | sdkmanager --licenses
+
+      - name: Launch emulator
         script: |
-          xcrun simctl boot "iPhone 15" # Using iPhone 15 from the list
-          xcrun simctl list devices
-          flutter devices
-          
-      - name: Run Patrol tests
+           cd $ANDROID_HOME/tools
+           emulator -avd emulator & 
+           adb wait-for-device
+           adb shell input keyevent 82
+
+      - name: Clean output
         script: |
-          patrol test -t integration_test/successful_login_test.dart -d "iPhone 15" --debug
-          
+           flutter doctor
+           flutter devices
+      
+      - name: Run tests with Patrol
+        script: patrol test -t integration_test/fail_login_test.dart
+        ignore_failure: false
+
     artifacts:
-      - patrol-results/**/*.png
-      - patrol-results/**/*.xml
-      - patrol-results/**/video.mp4
+      # Collect Patrol test reports
+      - ./patrol/reports/**/*
+    publishing:
+      email:
+        recipients:
+          - baloabby@gmail.com
