@@ -1,161 +1,91 @@
 workflows:
- patrol_android_test:
-   name: Android Test Workflow
-   max_build_duration: 60
-   instance_type: linux
-   environment:
-     flutter: 3.24.3
-   triggering:
-     events:
-       - tag
-     branch_patterns:
-       - pattern: '*'
-         include: true
-         source: true
-   scripts:
-     - name: Install Patrol CLI
-       script: dart pub global activate patrol_cli
-     - name: List Emulators
-       script: emulator -list-avds
-         
-     - name: SDK manager
-       script: |
-         export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools 
-         sdkmanager --update
-         yes | sdkmanager --licenses
-     - name: Launch emulator
-       script: |
-          cd $ANDROID_HOME/tools
-          emulator -avd emulator & 
-          adb wait-for-device
-          adb shell input keyevent 82
-     - name: Clean output
-       script: |
-          flutter doctor
+  patrol_android_test:
+    name: Android Test Workflow
+    max_build_duration: 60
+    instance_type: linux
+    environment:
+      flutter: 3.24.3
+    triggering:
+      events:
+        - tag
+      branch_patterns:
+        - pattern: '*'
+          include: true
+          source: true
+    scripts:
+      - name: Install Patrol CLI
+        script: dart pub global activate patrol_cli
+      - name: List Emulators
+        script: emulator -list-avds
+          
+      - name: SDK manager
+        script: |
+          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools 
+          sdkmanager --update
+          yes | sdkmanager --licenses
+      - name: Launch emulator
+        script: |
+           cd $ANDROID_HOME/tools
+           emulator -avd emulator & 
+           adb wait-for-device
+           adb shell input keyevent 82
+      - name: Clean output
+        script: |
+           flutter doctor
+           flutter devices
+      
+      - name: Run tests with Patrol
+        script: patrol test -t integration_test/fail_login_test.dart
+        ignore_failure: false
+    artifacts:
+      - ./patrol/reports/**/*
+    publishing:
+      email:
+        recipients:
+          - qualicion@outlook.com
+
+  patrol_ios_test:
+    name: iOS Test Workflow
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      flutter: 3.24.3
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - tag
+      branch_patterns:
+        - pattern: '*'
+          include: true
+          source: true
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+          dart pub global activate patrol_cli
+          
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          pod install
+          cd ..
+          
+      - name: Start iOS Simulator
+        script: |
+          xcrun simctl boot "iPhone 15"
+          xcrun simctl list devices
           flutter devices
-     
-     - name: Run tests with Patrol
-       script: patrol test -t integration_test/fail_login_test.dart
-       ignore_failure: false
-   artifacts:
-     - ./patrol/reports/**/*
-   publishing:
-     email:
-       recipients:
-         - qualicion@outlook.com
-
- patrol_ios_test:
-   name: iOS Test Workflow
-   instance_type: mac_mini_m2
-   max_build_duration: 120
-   environment:
-     flutter: 3.24.3
-     xcode: latest
-     cocoapods: default
-   triggering:
-     events:
-       - tag
-     branch_patterns:
-       - pattern: '*'
-         include: true
-         source: true
-   scripts:
-     - name: Get Flutter packages
-       script: |
-         flutter pub get
-         dart pub global activate patrol_cli
-         
-     - name: Install CocoaPods
-       script: |
-         cd ios
-         pod install
-         cd ..
-         
-     - name: Start iOS Simulator
-       script: |
-         xcrun simctl boot "iPhone 15"
-         xcrun simctl list devices
-         flutter devices
-         
-     - name: Run Patrol tests
-       script: |
-         patrol test integration_test/fail_login_test.dart -d "iPhone 15" --debug
-         
-   artifacts:
-     - patrol-results/**/*.png
-     - patrol-results/**/*.xml
-     - patrol-results/**/*.mp4
-   publishing:
-     email:
-       recipients:
-         - qualicion@outlook.com
-
- integration_tests_android:
-   name: Run All Android Tests
-   instance_type: linux
-   max_build_duration: 120
-   environment:
-     flutter: 3.24.3
-   triggering:
-     events:
-       - push
-   scripts:
-     - name: Get Flutter packages
-       script: |
-         flutter pub get
-         dart pub global activate patrol_cli
-
-     - name: Run Android Tests
-       script: |
-         export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools 
-         sdkmanager --update
-         yes | sdkmanager --licenses
-         cd $ANDROID_HOME/tools
-         emulator -avd emulator & 
-         adb wait-for-device
-         adb shell input keyevent 82
-         flutter devices
-         patrol test -t integration_test/fail_login_test.dart
-   
-   artifacts:
-     - ./patrol/reports/**/*
-   publishing:
-     email:
-       recipients:
-         - qualicion@outlook.com
-
- integration_tests_ios:
-   name: Run All iOS Tests
-   instance_type: mac_mini_m2
-   max_build_duration: 120
-   environment:
-     flutter: 3.24.3
-     xcode: latest
-     cocoapods: default
-   triggering:
-     events:
-       - push
-   scripts:
-     - name: Get Flutter packages
-       script: |
-         flutter pub get
-         dart pub global activate patrol_cli
-
-     - name: Run iOS Tests
-       script: |
-         cd ios
-         pod install
-         cd ..
-         xcrun simctl boot "iPhone 15"
-         xcrun simctl list devices
-         flutter devices
-         patrol test integration_test/fail_login_test.dart -d "iPhone 15" --debug
-   
-   artifacts:
-     - patrol-results/**/*.png
-     - patrol-results/**/*.xml
-     - patrol-results/**/*.mp4
-   publishing:
-     email:
-       recipients:
-         - qualicion@outlook.com
+          
+      - name: Run Patrol tests
+        script: |
+          patrol test integration_test/fail_login_test.dart -d "iPhone 15" --debug
+          
+    artifacts:
+      - patrol-results/**/*.png
+      - patrol-results/**/*.xml
+      - patrol-results/**/*.mp4
+    publishing:
+      email:
+        recipients:
+          - qualicion@outlook.com
