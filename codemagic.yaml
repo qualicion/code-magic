@@ -79,7 +79,7 @@ workflows:
           
       - name: Run Patrol tests
         script: |
-          patrol test integration_test/fail_login_test.dart -d "iPhone 15" --debug
+          patrol test -t integration_test/fail_login_test.dart -d "iPhone 15" --debug
           
     artifacts:
       - patrol-results/**/*.png
