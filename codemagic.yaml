@@ -21,13 +21,13 @@ workflows:
           
       - name: Start iOS Simulator
         script: |
-          xcrun simctl list
-          xcrun simctl boot "iPhone 14"
+          xcrun simctl boot "iPhone 15" # Using iPhone 15 from the list
+          xcrun simctl list devices
           flutter devices
           
       - name: Run Patrol tests
         script: |
-          patrol test integration_test/successful_login_test.dart -d "iPhone 14" --debug
+          patrol test integration_test/successful_login_test.dart -d "iPhone 15" --debug
           
     artifacts:
       - patrol-results/**/*.png
