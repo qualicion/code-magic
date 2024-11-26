@@ -1,35 +1,61 @@
 workflows:
-  ios-integration-test:
-    name: iOS Integration Test
-    instance_type: mac_mini_m2
-    max_build_duration: 120
-    environment:
-      flutter: stable
-      xcode: latest
-      cocoapods: default
-    scripts:
-      - name: Get Flutter packages
-        script: |
-          flutter pub get
-          dart pub global activate patrol_cli
-          
-      - name: Install CocoaPods
-        script: |
-          cd ios
-          pod install
-          cd ..
-          
-      - name: Start iOS Simulator
-        script: |
-          xcrun simctl boot "iPhone 15" # Using iPhone 15 from the list
-          xcrun simctl list devices
-          flutter devices
-          
-      - name: Run Patrol tests
-        script: |
-          patrol test integration_test/fail_login_test.dart -d "iPhone 15" --debug
-          
-    artifacts:
-      - patrol-results/**/*.png
-      - patrol-results/**/*.xml
-      - patrol-results/**/video.mp4
+ patrol_test:
+   name: Patrol Test Workflow
+   max_build_duration: 120
+   instance_type: mac_mini_m2
+   environment:
+     flutter: 3.24.3
+     xcode: 16.1
+     cocoapods: 1.14.3
+   triggering:
+     events:  
+       - push
+   scripts:
+     - name: Install Dependencies
+       script: |
+         flutter pub get
+         dart pub global activate patrol_cli
+         
+     - name: Setup Android
+       script: |
+         export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools 
+         sdkmanager --update
+         yes | sdkmanager --licenses
+
+     - name: Start Android Emulator
+       script: |
+         $ANDROID_SDK_ROOT/emulator/emulator -avd emulator -no-audio -no-window &
+         adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
+         echo "Android emulator is ready!"
+         
+     - name: Run Android Tests
+       script: |
+         flutter devices
+         patrol test integration_test/fail_login_test.dart -d emulator-5554 --debug
+         
+     - name: Setup iOS
+       script: |
+         cd ios
+         pod install
+         cd ..
+         
+     - name: Start iOS Simulator
+       script: |
+         xcrun simctl boot "iPhone 15"
+         xcrun simctl list devices
+         flutter devices
+         
+     - name: Run iOS Tests
+       script: |
+         patrol test integration_test/fail_login_test.dart -d "iPhone 15" --debug
+
+   artifacts:
+     - patrol-results/**/*.png
+     - patrol-results/**/*.xml
+     - patrol-results/**/video.mp4
+     - ./patrol/reports/**/*
+     
+   publishing:
+     email:
+       recipients:
+         - qualicion@outlook.com
